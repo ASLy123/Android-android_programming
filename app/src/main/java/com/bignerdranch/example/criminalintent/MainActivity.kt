@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
         //使用supportFragmentManager属性就能获取activity的fragment管理器
 
         if (currentFragment == null) {  //如果指定容器视图资源ID的fragment不存在 应该新建CrimeFragment，并启动一个新的fragment事务，将新建fragment添加到队列中
-            val fragment = CrimeFragment()
+            val fragment = CrimeListFragment()
             supportFragmentManager
                 .beginTransaction()                     //创建一个新的fragment事务
                 .add(R.id.fragment_container, fragment) //执行一个fragment添加操作
