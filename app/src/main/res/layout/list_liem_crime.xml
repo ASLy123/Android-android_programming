@@ -14,7 +14,7 @@
         android:layout_marginTop="16dp"
         android:text="Crime Title"
         android:textColor="#000000"
-        android:textSize="18sp"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/crime_date"
         app:layout_constraintEnd_toStartOf="@+id/crime_solved"
         app:layout_constraintHorizontal_bias="0.0"
@@ -37,8 +37,8 @@
 
     <ImageView
         android:id="@+id/crime_solved"
-        android:layout_width="52dp"
-        android:layout_height="53dp"
+        android:layout_width="35dp"
+        android:layout_height="40dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"

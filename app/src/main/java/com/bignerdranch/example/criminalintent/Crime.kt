@@ -1,8 +1,11 @@
 package com.bignerdranch.example.criminalintent
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.util.*
-
-data class Crime (val id: UUID = UUID.randomUUID(),
-                  var title: String = "",
-                  var date: Date = Date(),
-                  var isSolved: Boolean = false)
+@Entity
+data class Crime (
+    @PrimaryKey var id: UUID = UUID.randomUUID(),
+    var title: String = "",
+    var date: Date = Date(),
+    var isSolved: Boolean = false)
