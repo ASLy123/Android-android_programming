@@ -2,7 +2,7 @@ package com.bignerdranch.example.criminalintent.database
 
 import java.util.*
 
-class CrimeTypeConverter {
+class CrimeTypeConverter {          //类型转换器会告诉Room如何转换要保存的特定类型的数据
     @androidx.room.TypeConverter
     fun fromDate(date: Date?): Long? {
         return date?.time
