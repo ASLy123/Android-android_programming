@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.util.*
@@ -108,8 +109,18 @@ class CrimeListFragment : Fragment(){
 
     }
 
+    object FlowerDiffCallback : DiffUtil.ItemCallback<Crime>(){
+        override fun areItemsTheSame(oldItem: Crime, newItem: Crime): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: Crime, newItem: Crime): Boolean {
+            return oldItem == newItem
+        }
+    }
     private inner class CrimeAdapter(var crimes: List<Crime>)
-        : RecyclerView.Adapter<CrimeHolder>() {
+        : androidx.recyclerview.widget.ListAdapter<Crime, CrimeHolder>(FlowerDiffCallback) {
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
             val view = layoutInflater.inflate(R.layout.list_liem_crime, parent, false)
             return CrimeHolder(view)
@@ -119,6 +130,7 @@ class CrimeListFragment : Fragment(){
             val crime = crimes[position]
             holder.bind(crime)
         }
+
     }
 //    private fun updateUI() {
     private fun updateUI(crimes: List<Crime>) {

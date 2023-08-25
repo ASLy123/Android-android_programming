@@ -11,6 +11,8 @@ class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
+
         //获取FragmentManager之后，再获取一个fragment交给它管理
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         //使用supportFragmentManager属性就能获取activity的fragment管理器

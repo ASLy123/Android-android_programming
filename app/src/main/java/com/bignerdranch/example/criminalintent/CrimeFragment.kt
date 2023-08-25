@@ -15,8 +15,11 @@ import androidx.lifecycle.ViewModelProviders
 import java.util.*
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id"
+private const val DIALOG_DATE = "DialogDate"
+private const val REQUEST_DATE = 0
 
-class CrimeFragment : Fragment() {
+
+class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
     private lateinit var dateButton: Button
@@ -57,10 +60,10 @@ class CrimeFragment : Fragment() {
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
 
 
-        dateButton.apply {
-            text = crime.date.toString()    //显示crime的发生日期
-            isEnabled = false               //禁用Button按钮
-        }
+//        dateButton.apply {
+//            text = crime.date.toString()    //显示crime的发生日期
+//            isEnabled = false               //禁用Button按钮
+//        }
         return view
     }
 
@@ -116,6 +119,10 @@ class CrimeFragment : Fragment() {
         crimeDetailViewModel.saveCrime(crime)       //保存数据
     }
 
+    override fun onDateSelected(date: Date){
+        crime.date = date
+        updateUI()
+    }
     private fun updateUI(){
         titleField.setText(crime.title)
         dateButton.text = crime.date.toString()
@@ -123,6 +130,14 @@ class CrimeFragment : Fragment() {
         solvedCheckBox.apply {
             isChecked = crime.isSolved
             jumpDrawablesToCurrentState()       //跳过checkbox的勾选动画
+        }
+
+        dateButton.setOnClickListener{
+            DatePickerFragment.newInstance(crime.date).apply {
+                setTargetFragment(this@CrimeFragment, REQUEST_DATE) //目标fragment和请求代码
+                show(this@CrimeFragment.requireFragmentManager(), DIALOG_DATE)
+
+            }
         }
     }
 
