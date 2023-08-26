@@ -22,7 +22,7 @@ class DatePickerFragment : DialogFragment() {
         val  initialDay = calendar.get(Calendar.DAY_OF_MONTH)
         val dateListener = DatePickerDialog.OnDateSetListener{
                 _: DatePicker, year: Int, month: Int, day: Int ->
-            val resultDate : Date = GregorianCalendar(year, month, day).time
+            val resultDate : Date = GregorianCalendar(year, month, day).time  //得到需要的Date对象
             targetFragment?.let { fragment ->
                 (fragment as Callbacks).onDateSelected(resultDate)
             }
