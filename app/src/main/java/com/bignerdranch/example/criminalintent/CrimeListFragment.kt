@@ -3,9 +3,7 @@ package com.bignerdranch.example.criminalintent
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -42,6 +40,11 @@ class CrimeListFragment : Fragment(){
         super.onAttach(context)
         callbacks = context as Callbacks?   //把托管activity转成了Callbacks. 这样托管activity就必须要实现callbacks接口
     }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)     //让FragmentManager知道CrimeListFragment需接收选项菜单函数回调
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -71,6 +74,24 @@ class CrimeListFragment : Fragment(){
         super.onDetach()
         callbacks = null    //取消callbacks属性
     }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.fragment_crime_list, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId){
+            R.id.new_crime ->{
+                val crime = Crime()
+                crimeListViewModel.addCrime(crime)
+                callbacks?.onCrimeSelected(crime.id)
+                true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
+
     companion object {
         fun newInstance(): CrimeListFragment {
             return CrimeListFragment()      //让activity调用获取fragment实例
