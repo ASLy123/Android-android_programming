@@ -4,10 +4,9 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.bignerdranch.example.criminalintent.database.CrimeDatabase
+import com.bignerdranch.example.criminalintent.database.migration_1_2
 import java.util.*
-import java.util.concurrent.Executor
 import java.util.concurrent.Executors
-import java.util.concurrent.Executors.newSingleThreadExecutor
 
 private const val DATABASE_NAME = "crime-database"
 class CrimeRepository private constructor(context: Context) {
@@ -16,7 +15,7 @@ class CrimeRepository private constructor(context: Context) {
         context.applicationContext,
         CrimeDatabase::class.java,              //Room用来创建数据库的类
         DATABASE_NAME                           //Room将要创建的数据库文件的名字
-    ).build()
+    ).addMigrations(migration_1_2).build()  //调用addMigrations(...)创建数据库迁移
 
     private val crimeDao = database.crimeDao()
     private val executor = Executors.newSingleThreadExecutor()  //newSingleThreadExecutor()函数会返回一个指向新线程的executor实例
@@ -37,6 +36,8 @@ class CrimeRepository private constructor(context: Context) {
             crimeDao.addCrime(crime)
         }
     }
+
+
     companion object {
         private var INSTANCE: CrimeRepository? = null
         fun initialize(context: Context) {

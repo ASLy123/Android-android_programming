@@ -19,4 +19,5 @@ class CrimeListViewModel : ViewModel() {
         crimeRepository.addCrime(crime)
     }
 
+
 }
