@@ -40,10 +40,10 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
     private lateinit var suspectButton: Button
 
 
-
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {        //关联CrimeFragment和CrimeDetailViewModel
         ViewModelProviders.of(this).get(CrimeDetailViewModel::class.java)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         crime = Crime()
@@ -51,10 +51,11 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
 //        Log.d(TAG, "args bundle crime ID: $crimeId")
         crimeDetailViewModel.loadCrime(crimeId)
     }
-    companion object{
-        fun newInstance(crimeId: UUID): CrimeFragment{      //创建fragment实例及Bundle对象
+
+    companion object {
+        fun newInstance(crimeId: UUID): CrimeFragment {      //创建fragment实例及Bundle对象
             val args = Bundle().apply {
-                putSerializable(ARG_CRIME_ID,crimeId)       //调用Bundle限定类型的get函数
+                putSerializable(ARG_CRIME_ID, crimeId)       //调用Bundle限定类型的get函数
             }
             return CrimeFragment().apply {
                 arguments = args        //把新建argument附加给fragment实例
@@ -68,8 +69,8 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_crime,container, false)  //生成fragment的视图
-                                                          //视图的父视图, 是否立即将生成的视图添加给父视图
+        val view = inflater.inflate(R.layout.fragment_crime, container, false)  //生成fragment的视图
+        //视图的父视图, 是否立即将生成的视图添加给父视图
         titleField = view.findViewById(R.id.crime_title) as EditText
         dateButton = view.findViewById(R.id.crime_date) as Button
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
@@ -109,6 +110,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
             ) {
                 // This space intentionally left blank
             }
+
             override fun onTextChanged(
                 sequence: CharSequence?,    //用户输入
                 start: Int,
@@ -118,8 +120,8 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
                 crime.title = sequence.toString()
 
             }
-            override fun afterTextChanged(sequence: Editable?)
-            {
+
+            override fun afterTextChanged(sequence: Editable?) {
                 // This one too
             }
         }
@@ -130,39 +132,12 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
             }
         }
 
-    }
-
-    override fun onStop() {
-        super.onStop()
-        crimeDetailViewModel.saveCrime(crime)       //保存数据
-    }
-
-    override fun onDateSelected(date: Date){
-        crime.date = date
-        updateUI()
-    }
-
-    private fun updateUI() {
-        titleField.setText(crime.title)
-        dateButton.text = crime.date.toString()
-//        solvedCheckBox.isChecked = crime.isSolved
-        solvedCheckBox.apply {
-            isChecked = crime.isSolved
-            jumpDrawablesToCurrentState()       //跳过checkbox的勾选动画
-        }
-        if (crime.suspect.isNotEmpty()) {
-            suspectButton.text = crime.suspect
-        }
-
-
         dateButton.setOnClickListener {
             DatePickerFragment.newInstance(crime.date).apply {
-                setTargetFragment(this@CrimeFragment, REQUEST_DATE) //目标fragment和请求代码
+                setTargetFragment(this@CrimeFragment, REQUEST_DATE)
                 show(this@CrimeFragment.requireFragmentManager(), DIALOG_DATE)
-
             }
         }
-
 
         timeButton.setOnClickListener {
             TimePickerFragment.newInstance(crime.date).apply {
@@ -171,78 +146,118 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
 
             }
         }
+
         reportButton.setOnClickListener {
             Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, getCrimeReport())
-                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject))
+                putExtra(
+                    Intent.EXTRA_SUBJECT,
+                    getString(R.string.crime_report_subject)
+                )
             }.also { intent ->
                 val chooserIntent = Intent.createChooser(intent, getString(R.string.send_report))
                 startActivity(chooserIntent)
             }
         }
         suspectButton.apply {
-            val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+            val pickContactIntent =
+                Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+            //要执行的操作, 待访问数据的位置
             setOnClickListener {
                 startActivityForResult(pickContactIntent, REQUEST_CONTACT)
             }
-//            pickContactIntent.addCategory(Intent.CATEGORY_HOME)   //阻止任何联系人应用和你的intent匹配
+            pickContactIntent.addCategory(Intent.CATEGORY_HOME)   //阻止任何联系人应用和你的intent匹配
             val packageManager: PackageManager = requireActivity().packageManager
             val resolvedActivity: ResolveInfo? =
-                packageManager.resolveActivity(pickContactIntent, PackageManager.MATCH_DEFAULT_ONLY)
+                packageManager.resolveActivity(pickContactIntent, PackageManager.MATCH_DEFAULT_ONLY)    //resolveActivity()可以找到匹配给定Intent任务的activity
             //MATCH_DEFAULT_ONLY限定只搜索带CATEGORY_DEFAULT标志的activity
             if (resolvedActivity == null) {
                 isEnabled = false
             }
+
+
         }
+
     }
-    override fun onActivityResult(requestCode: Int,
-                                  resultCode: Int, data: Intent?) {
-        when {
-            resultCode != Activity.RESULT_OK -> return
-            requestCode == REQUEST_CONTACT && data != null ->
-            {
-                val contactUri: Uri? = data.data
-                // Specify which fields you want your query to return values for
-                val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
-                // Perform your query - the contactUri is like a "where" clause here
-                val cursor = contactUri?.let {
-                    requireActivity().contentResolver
-                        .query(
-                            contactUri, queryFields, null,
-                            null, null)
-                }
-                cursor?.use {
-                    // Verify cursor contains at least one result
-                    if (it.count == 0) {
-                        return
+
+
+
+
+
+        override fun onStop() {
+            super.onStop()
+            crimeDetailViewModel.saveCrime(crime)       //保存数据
+        }
+
+        override fun onDateSelected(date: Date) {
+            crime.date = date
+            updateUI()
+        }
+
+        private fun updateUI() {
+            titleField.setText(crime.title)
+            dateButton.text = crime.date.toString()
+//        solvedCheckBox.isChecked = crime.isSolved
+            solvedCheckBox.apply {
+                isChecked = crime.isSolved
+                jumpDrawablesToCurrentState()       //跳过checkbox的勾选动画
+            }
+            if (crime.suspect.isNotEmpty()) {   //设置按钮文字
+                suspectButton.text = crime.suspect
+            }
+
+        }
+
+        override fun onActivityResult(
+            requestCode: Int,
+            resultCode: Int,
+            data: Intent?
+        ) {   //获取联系人姓名
+            when {
+                resultCode != Activity.RESULT_OK -> return
+                requestCode == REQUEST_CONTACT && data != null -> {
+                    val contactUri: Uri? = data.data
+                    // Specify which fields you want your query to return values for
+                    val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+                    // Perform your query - the contactUri is like a "where" clause here
+                    val cursor = contactUri?.let {
+                        requireActivity().contentResolver
+                            .query(
+                                contactUri, queryFields, null,
+                                null, null
+                            )
                     }
-                    // Pull out the first column of the first row of data - that is your suspect's name
-                    it.moveToFirst()
-                    val suspect = it.getString(0)
-                    crime.suspect = suspect
-                    crimeDetailViewModel.saveCrime(crime)
-                    suspectButton.text = suspect
+                    cursor?.use {
+                        // Verify cursor contains at least one result
+                        if (it.count == 0) {
+                            return
+                        }
+                        // Pull out the first column of the first row of data - that is your suspect's name
+                        it.moveToFirst()
+                        val suspect = it.getString(0)
+                        crime.suspect = suspect
+                        crimeDetailViewModel.saveCrime(crime)
+                        suspectButton.text = suspect
+                    }
                 }
             }
         }
+
+
+        private fun getCrimeReport(): String {   //创建四段字符串信息，并返回拼接完整的消息
+            val solvedString = if (crime.isSolved) {
+                getString(R.string.crime_report_solved)
+            } else {
+                getString(R.string.crime_report_unsolved)
+            }
+            val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
+            var suspect = if (crime.suspect.isBlank()) {
+                getString(R.string.crime_report_no_suspect)
+            } else {
+                getString(R.string.crime_report_suspect)
+            }
+            return getString(R.string.crime_report, crime.title, dateString, solvedString, suspect)
+        }
     }
 
-
-
-    private fun getCrimeReport(): String{   //创建四段字符串信息，并返回拼接完整的消息
-        val solvedString = if (crime.isSolved){
-            getString(R.string.crime_report_solved)
-        } else {
-            getString(R.string.crime_report_unsolved)
-        }
-        val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
-        var suspect = if(crime.suspect.isBlank()){
-            getString(R.string.crime_report_no_suspect)
-        } else{
-            getString(R.string.crime_report_suspect)
-        }
-        return getString(R.string.crime_report, crime.title, dateString, solvedString, suspect)
-    }
-
-}
