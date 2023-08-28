@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.bignerdranch.example.criminalintent.database.CrimeDatabase
 import com.bignerdranch.example.criminalintent.database.migration_1_2
+import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
 
@@ -19,7 +20,7 @@ class CrimeRepository private constructor(context: Context) {
 
     private val crimeDao = database.crimeDao()
     private val executor = Executors.newSingleThreadExecutor()  //newSingleThreadExecutor()函数会返回一个指向新线程的executor实例
-
+    private val filesDir = context.applicationContext.filesDir
     //    fun getCrimes(): List<Crime> = crimeDao.getCrimes()
     fun getCrimes(): LiveData<List<Crime>> = crimeDao.getCrimes()
     //    fun getCrime(id: UUID): Crime? = crimeDao.getCrime(id)
@@ -37,6 +38,7 @@ class CrimeRepository private constructor(context: Context) {
         }
     }
 
+    fun getPhotoFile(crime: Crime):File = File(filesDir, crime.photoFileName)   //返回指向某个具体位置的File对象
 
     companion object {
         private var INSTANCE: CrimeRepository? = null

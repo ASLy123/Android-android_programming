@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <files-path name=" crime_photos" path="."></files-path> //把私有存储空间的根路径映射为crime_photos
+</paths>

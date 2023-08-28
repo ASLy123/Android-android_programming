@@ -7,18 +7,19 @@ import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
+import android.widget.*
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import com.bignerdranch.android.criminalintent.getScaledBitmap
+import java.io.File
 import java.util.*
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id"
@@ -27,18 +28,24 @@ private const val DIALOG_TIME = "DialogTime"
 private const val REQUEST_DATE = 0
 private const val REQUEST_CONTACT = 1
 private const val REQUEST_TIME = 2
+private const val REQUEST_PHOTO = 3
 
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
 class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragment.Callbacks {
     private lateinit var crime: Crime
+    private lateinit var photoFile: File
+    private lateinit var photoUri: Uri
+
     private lateinit var titleField: EditText
     private lateinit var dateButton: Button
     private lateinit var timeButton: Button
     private lateinit var solvedCheckBox: CheckBox
     private lateinit var reportButton: Button
     private lateinit var suspectButton: Button
-
+//    private lateinit var callButton: Button
+    private lateinit var photoButton: ImageButton
+    private lateinit var photoView: ImageView
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {        //关联CrimeFragment和CrimeDetailViewModel
         ViewModelProviders.of(this).get(CrimeDetailViewModel::class.java)
@@ -77,6 +84,10 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
         timeButton = view.findViewById(R.id.btn_pickTime) as Button
         reportButton = view.findViewById(R.id.crime_report) as Button
         suspectButton = view.findViewById(R.id.crime_suspect) as Button
+//        callButton = view.findViewById(R.id.crime_call) as Button
+        photoButton = view.findViewById(R.id.crime_camera) as ImageButton
+        photoView    = view.findViewById(R.id.crime_photo) as ImageView
+
 
 
 //        dateButton.apply {
@@ -93,6 +104,11 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
             androidx.lifecycle.Observer { crime ->
                 crime?.let {
                     this.crime = crime
+                    photoFile = crimeDetailViewModel.getPhotoFile(crime)    //获取照片文件位置
+                    photoUri = FileProvider.getUriForFile(      //getUriForFile())会把本地文件路径转换为相机能使用的Uri形式
+                        requireActivity(),
+                        "com.bignerdranch.android.criminalintent.fileprovider", //provider授权
+                        photoFile)  //图片文件路径
                     updateUI()
                 }
             })
@@ -149,14 +165,14 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
 
         reportButton.setOnClickListener {
             Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
+                type = "text/plain"     //指定·数据类型为text/plain
                 putExtra(Intent.EXTRA_TEXT, getCrimeReport())
                 putExtra(
                     Intent.EXTRA_SUBJECT,
                     getString(R.string.crime_report_subject)
                 )
             }.also { intent ->
-                val chooserIntent = Intent.createChooser(intent, getString(R.string.send_report))
+                val chooserIntent = Intent.createChooser(intent, getString(R.string.send_report))   //创建每次都显示的activity选择器
                 startActivity(chooserIntent)
             }
         }
@@ -167,6 +183,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
             setOnClickListener {
                 startActivityForResult(pickContactIntent, REQUEST_CONTACT)
             }
+
             pickContactIntent.addCategory(Intent.CATEGORY_HOME)   //阻止任何联系人应用和你的intent匹配
             val packageManager: PackageManager = requireActivity().packageManager
             val resolvedActivity: ResolveInfo? =
@@ -175,8 +192,27 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
             if (resolvedActivity == null) {
                 isEnabled = false
             }
+        }
 
-
+        photoButton.apply {
+            val packageManager: PackageManager = requireActivity().packageManager
+            val captureImage = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            val resolvedActivity: ResolveInfo? = packageManager.resolveActivity(captureImage, PackageManager.MATCH_DEFAULT_ONLY)
+            //找PackageManager确认是否有响应相机隐式intent的activity
+//            if (resolvedActivity == null) {
+//                isEnabled = false
+//            }
+            setOnClickListener{
+                captureImage.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+                val cameraActivities: List<ResolveInfo> = packageManager.queryIntentActivities(captureImage, PackageManager.MATCH_DEFAULT_ONLY)
+                for (cameraActivity in cameraActivities){
+                    requireActivity().grantUriPermission(
+                            cameraActivity.activityInfo.packageName,
+                            photoUri,
+                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                }
+                startActivityForResult(captureImage, REQUEST_PHOTO)
+            }
         }
 
     }
@@ -190,7 +226,14 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
             crimeDetailViewModel.saveCrime(crime)       //保存数据
         }
 
-        override fun onDateSelected(date: Date) {
+    override fun onDetach() {       //　撤销URI权限
+        super.onDetach()
+        requireActivity().revokeUriPermission(photoUri,
+            Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+    }
+
+
+    override fun onDateSelected(date: Date) {
             crime.date = date
             updateUI()
         }
@@ -206,8 +249,16 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
             if (crime.suspect.isNotEmpty()) {   //设置按钮文字
                 suspectButton.text = crime.suspect
             }
-
+            updatePhotoView()
         }
+    private fun updatePhotoView(){  //刷新photoView
+        if (photoFile.exists()) {
+            val bitmap = getScaledBitmap(photoFile.path, requireActivity())
+            photoView.setImageBitmap(bitmap)
+        } else{
+            photoView.setImageDrawable(null)
+        }
+    }
 
         override fun onActivityResult(
             requestCode: Int,
@@ -241,8 +292,13 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
                         suspectButton.text = suspect
                     }
                 }
+                requestCode == REQUEST_PHOTO -> {
+                    updatePhotoView()
+                }
+
             }
         }
+
 
 
         private fun getCrimeReport(): String {   //创建四段字符串信息，并返回拼接完整的消息

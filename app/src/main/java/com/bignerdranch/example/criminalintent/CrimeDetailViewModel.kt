@@ -2,6 +2,7 @@ package com.bignerdranch.example.criminalintent
 
 import android.view.View
 import androidx.lifecycle.*
+import java.io.File
 import java.util.*
 
 class CrimeDetailViewModel : ViewModel() {
@@ -17,5 +18,8 @@ class CrimeDetailViewModel : ViewModel() {
     }
     fun saveCrime(crime: Crime){        //crime数据写入数据库
         crimeRepository.updateCrime(crime)
+    }
+    fun getPhotoFile(crime: Crime): File{
+        return crimeRepository.getPhotoFile(crime)  //展示文件信息
     }
 }
