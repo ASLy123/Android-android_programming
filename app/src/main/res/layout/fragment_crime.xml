@@ -69,7 +69,7 @@
         android:id="@+id/btn_pickTime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pick time" />
+        android:text="@string/crime_pick_time" />
 
     <CheckBox
         android:id="@+id/crime_solved"

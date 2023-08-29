@@ -22,7 +22,7 @@ class TimePickerFragment : DialogFragment(), TimePickerDialog.OnTimeSetListener 
     interface Callbacks{
         fun onDateSelected(date: Date)
     }
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {  //发回日期
         // Use the current time as the default values for the picker
         val date = arguments?.getSerializable(ARG_TIME) as Date
         val c = Calendar.getInstance()

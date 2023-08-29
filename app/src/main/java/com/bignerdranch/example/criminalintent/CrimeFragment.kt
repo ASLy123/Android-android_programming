@@ -10,7 +10,7 @@ import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
-import android.text.format.DateFormat
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +20,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.bignerdranch.android.criminalintent.getScaledBitmap
 import java.io.File
+import java.text.DateFormat
+import android.text.*
+import android.text.format.DateFormat.format
 import java.util.*
+
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id"
 private const val DIALOG_DATE = "DialogDate"
@@ -240,7 +244,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
 
         private fun updateUI() {
             titleField.setText(crime.title)
-            dateButton.text = crime.date.toString()
+            dateButton.text = DateFormat.getDateInstance().format(crime.date)
 //        solvedCheckBox.isChecked = crime.isSolved
             solvedCheckBox.apply {
                 isChecked = crime.isSolved
@@ -307,7 +311,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
             } else {
                 getString(R.string.crime_report_unsolved)
             }
-            val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
+            val dateString = android.text.format.DateFormat.format(DATE_FORMAT,crime.date).toString()
             var suspect = if (crime.suspect.isBlank()) {
                 getString(R.string.crime_report_no_suspect)
             } else {
