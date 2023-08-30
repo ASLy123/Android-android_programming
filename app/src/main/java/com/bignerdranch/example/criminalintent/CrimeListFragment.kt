@@ -16,7 +16,7 @@ import java.util.*
 
 private const val TAG = "CrimeListFragment"
 class CrimeListFragment : Fragment(){
-    interface Callbacks {       //。这个接口里定义的就是被托管的fragment要求它的托管activity做的工作
+    interface Callbacks {       //代理任务给托管activity 接口里定义的就是被托管的fragment要求它的托管activity做的工作
         fun onCrimeSelected(crimeId: UUID)
     }
 
@@ -51,7 +51,7 @@ class CrimeListFragment : Fragment(){
     ): View? {
         val view = inflater.inflate(R.layout.fragment_crime_list, container, false)
         crimeRecyclerView = view.findViewById(R.id.crime_recycler_view) as RecyclerView
-        crimeRecyclerView.layoutManager = LinearLayoutManager(context) //。LayoutManager不仅要安排列表项出现的位置，还负责定义如何滚屏
+        crimeRecyclerView.layoutManager = LinearLayoutManager(context) //LayoutManager不仅要安排列表项出现的位置，还负责定义如何滚屏
 //        updateUI()
         crimeRecyclerView.adapter = adapter
         return view
