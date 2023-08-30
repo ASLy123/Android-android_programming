@@ -12,11 +12,11 @@ import java.util.concurrent.Executors
 private const val DATABASE_NAME = "crime-database"
 class CrimeRepository private constructor(context: Context) {
 
-    private val database : CrimeDatabase = Room.databaseBuilder( //databaseBuilder()使用三个参数具体实现了CrimeDatabase抽象类
+    private val database : CrimeDatabase = Room.databaseBuilder( //databaseBuilder()实现CrimeDatabase抽象类
         context.applicationContext,
         CrimeDatabase::class.java,              //Room用来创建数据库的类
         DATABASE_NAME                           //Room将要创建的数据库文件的名字
-    ).addMigrations(migration_1_2).build()  //调用addMigrations(...)创建数据库迁移
+    ).addMigrations(migration_1_2).build()  //调用addMigrations()创建数据库迁移
 
     private val crimeDao = database.crimeDao()
     private val executor = Executors.newSingleThreadExecutor()  //newSingleThreadExecutor()函数会返回一个指向新线程的executor实例
