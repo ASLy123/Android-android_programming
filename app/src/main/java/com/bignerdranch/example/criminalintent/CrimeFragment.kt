@@ -254,13 +254,18 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
                 suspectButton.text = crime.suspect
             }
             updatePhotoView()
+
         }
-    private fun updatePhotoView(){  //刷新photoView
-        if (photoFile.exists()) {
+
+
+    private fun updatePhotoView(){  ////刷新photoView
+        if(photoFile.exists()){
             val bitmap = getScaledBitmap(photoFile.path, requireActivity())
             photoView.setImageBitmap(bitmap)
-        } else{
+            photoView.contentDescription = getString(R.string.crime_photo_image_description)
+        } else {
             photoView.setImageDrawable(null)
+            photoView.contentDescription = getString(R.string.crime_photo_no_image_description)
         }
     }
 
@@ -304,16 +309,6 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragme
         }
 
 
-        private fun updatePhoteView(){
-            if(photoFile.exists()){
-                val bitmap = getScaledBitmap(photoFile.path, requireActivity())
-                photoView.setImageBitmap(bitmap)
-                photoView.contentDescription = getString(R.string.crime_photo_image_description)
-            } else {
-                photoView.setImageDrawable(null)
-                photoView.contentDescription = getString(R.string.crime_photo_no_image_description)
-            }
-        }
 
         private fun getCrimeReport(): String {   //创建四段字符串信息，并返回拼接完整的消息
             val solvedString = if (crime.isSolved) {
