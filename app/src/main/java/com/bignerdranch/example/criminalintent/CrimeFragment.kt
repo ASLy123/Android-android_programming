@@ -404,7 +404,7 @@
         private fun loadThumbnailImage(width: Int, height: Int) {
             // 使用 Glide 或其他图像加载库加载缩略图，传递图像视图的宽度和高度
             Glide.with(this)
-                .load(photoFile)
+                .load(photoFile.path)
                 .override(width, height) // 设置缩略图的尺寸
                 .centerCrop() // 可根据需要使用其他缩放策略
                 .into(photoView)
