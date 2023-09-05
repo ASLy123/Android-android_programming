@@ -26,6 +26,8 @@
     <string name="crime_empty">No data available</string>
     <string name="crime_call_phone">call phone</string>
 
+    <string name="crime_delete_all">Delete All Crime</string>
+
 
 
 

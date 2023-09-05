@@ -7,7 +7,7 @@
         android:title="@string/new_crime" />
     <item
         android:id="@+id/delete_all_crime"
-        android:title="Delete All Crime"></item>
+        android:title="@string/crime_delete_all"></item>
 
 
 </menu>
