@@ -2,13 +2,10 @@
 
     import android.Manifest
     import android.app.Activity
-    import android.app.Dialog
     import android.content.ActivityNotFoundException
-    import android.content.ContentResolver
     import android.content.Intent
     import android.content.pm.PackageManager
     import android.content.pm.ResolveInfo
-    import android.database.Cursor
     import android.net.Uri
     import android.os.Bundle
     import android.provider.ContactsContract
@@ -16,7 +13,6 @@
     import android.provider.MediaStore
     import android.text.Editable
     import android.text.TextWatcher
-
     import android.view.LayoutInflater
     import android.view.View
     import android.view.ViewGroup
@@ -29,13 +25,12 @@
     import java.text.DateFormat
     import android.text.*
     import android.view.ViewTreeObserver
-
+    import android.view.ViewTreeObserver.*
     import androidx.core.app.ActivityCompat
-    import androidx.core.content.ContextCompat
     import com.bumptech.glide.Glide
     import java.util.*
 
-    private const val TAG = "CrimeFragment"
+//    private const val TAG = "CrimeFragment"
     private const val ARG_CRIME_ID = "crime_id"
     private const val DIALOG_DATE = "DialogDate"
     private const val DIALOG_TIME = "DialogTime"
@@ -43,7 +38,7 @@
     private const val REQUEST_CONTACT = 1
     private const val REQUEST_TIME = 2
     private const val REQUEST_PHOTO = 3
-    private const val REQUEST_PHONENUMBLE = 4
+//    private const val REQUEST_PHONENUMBLE = 4
 
 
     class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragment.Callbacks {
@@ -62,7 +57,6 @@
         private lateinit var photoButton: ImageButton
         private lateinit var photoView: ImageView
 
-        private var phoneNumber = ""
 
         private val crimeDetailViewModel: CrimeDetailViewModel by lazy {        //关联CrimeFragment和CrimeDetailViewModel
             ViewModelProviders.of(this).get(CrimeDetailViewModel::class.java)
@@ -146,18 +140,9 @@
                     }
                 })
 
-            photoView.viewTreeObserver.addOnGlobalLayoutListener(
-                object : ViewTreeObserver.OnGlobalLayoutListener {
-                    override fun onGlobalLayout() {
-                        // 在视图树准备好后，加载缩略图
-                        loadThumbnailImage(photoView.width, photoView.height)
 
-                        // 移除监听器，以确保只加载一次缩略图
-                        photoView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    }
-                }
-            )
         }
+
 
 
 
@@ -229,19 +214,19 @@
             suspectButton.apply {
                 val pickContactIntent =
                     Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI)
-                //要执行的操作, 待访问数据的位置
+                                //要执行的操作, 待访问数据的位置
                 setOnClickListener {
                     startActivityForResult(pickContactIntent, REQUEST_CONTACT)
                 }
 
-                //            pickContactIntent.addCategory(Intent.CATEGORY_HOME)   //阻止任何联系人应用和你的intent匹配
-                //            val packageManager: PackageManager = requireActivity().packageManager
-                //            val resolvedActivity: ResolveInfo? =
-                //            packageManager.resolveActivity(pickContactIntent, PackageManager.MATCH_DEFAULT_ONLY)    //resolveActivity()可以找到匹配给定Intent任务的activity
-                //            MATCH_DEFAULT_ONLY限定只搜索带CATEGORY_DEFAULT标志的activity
-                //            if (resolvedActivity == null) {
-                //                isEnabled = false
-                //            }
+                //   pickContactIntent.addCategory(Intent.CATEGORY_HOME)   //阻止任何联系人应用和你的intent匹配
+//                   val packageManager: PackageManager = requireActivity().packageManager
+//                   val resolvedActivity: ResolveInfo? =
+//                   packageManager.resolveActivity(pickContactIntent, PackageManager.MATCH_DEFAULT_ONLY)    //resolveActivity()可以找到匹配给定Intent任务的activity
+//                   MATCH_DEFAULT_ONLY限定只搜索带CATEGORY_DEFAULT标志的activity
+//                   if (resolvedActivity == null) {
+//                       isEnabled = false
+//                   }
             }
 
             callPhone.apply {
@@ -250,7 +235,7 @@
                 setOnClickListener {
                     try {
                         val intent = Intent(Intent.ACTION_DIAL).apply {
-                            data = Uri.parse("tel:$phoneNumber")
+                            data = Uri.parse("tel:${crimeDetailViewModel.phoneNumber}")
                         }
                         startActivity(intent)
                     } catch (e: ActivityNotFoundException) {
@@ -292,6 +277,20 @@
                 val fragment = photoDialogFragment.newInstance(photoUrl)
                 fragment.show(this@CrimeFragment.requireFragmentManager(), "photo_dialog")
             }
+
+
+            // 添加视图树监听器以确保视图准备好后加载缩略图
+            photoView.viewTreeObserver.addOnGlobalLayoutListener(
+                object : OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        // 在视图树准备好后，加载缩略图
+                        loadThumbnailImage(photoView.width, photoView.height)
+
+                        // 移除监听器，以确保只加载一次缩略图
+                        photoView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    }
+                }
+            )
 
 
         }
@@ -351,43 +350,43 @@
                 resultCode != Activity.RESULT_OK -> return
                 requestCode == REQUEST_CONTACT && data != null -> {
 
-                    val contactUri: Uri? = data.data    //从返回的数据中获取联系人的Uri（唯一标识符）
+                val contactUri: Uri? = data.data    //从返回的数据中获取联系人的Uri（唯一标识符）
 
-                    val resolver = requireActivity().contentResolver
-                    val queryFields = arrayOf(Contacts.DISPLAY_NAME)
-                    // 定义一个字符串数组，包含您想要查询的联系人字段，这里只查询显示名字
+                val resolver = requireActivity().contentResolver
+                val queryFields = arrayOf(Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts._ID)
+                // 定义一个字符串数组，包含您想要查询的联系人字段，这里只查询显示名字
 
-                    val cursor = contactUri?.let {
-                        resolver.query(it, queryFields, null, null, null)
+                val cursor = contactUri?.let {
+                    resolver.query(it, queryFields, null, null, null)
+                }
+                //查询联系人数据库，获取指定Uri的联系人信息
+                cursor?.use {
+                    // Verify cursor contains at least one result
+                   if (it.count == 0) {
+                        return
                     }
-                    //查询联系人数据库，获取指定Uri的联系人信息
-
-                    cursor?.use {
-                        // Verify cursor contains at least one result
-                        if (it.count == 0) {
-                            return
+                    // Pull out the first column of the first row of data - that is your suspect's name
+                    it.moveToFirst()    //将游标移到查询结果的第一行。
+                    val suspect = it.getString(0)
+                    val contactID = it.getString(1)
+                     crime.suspect = suspect
+                     crimeDetailViewModel.saveCrime(crime)
+                     suspectButton.text = suspect
+                     val phone = activity?.contentResolver?.query(
+                          ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                         null,
+                         ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactID,
+                         null,
+                         null)
+                     phone?.apply {
+                        moveToNext()
+                        val columnIndex = getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                        if (columnIndex >= 0){
+                             crimeDetailViewModel.phoneNumber = getString(columnIndex)
                         }
-                        // Pull out the first column of the first row of data - that is your suspect's name
-                        it.moveToFirst()    //将游标移到查询结果的第一行。
-                        val suspect = it.getString(0)
-                        crime.suspect = suspect
-                        crimeDetailViewModel.saveCrime(crime)
-                        suspectButton.text = suspect
-//
-//                        val phoneCursor = resolver.query(
-//                            contactUri,
-//                        null,
-//                        null,
-//                        null,
-//                        null)
-//
-//                        phoneCursor?.use{
-//                            if (phoneCursor.moveToFirst()){
-//                                val index = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-//                                phoneNumber = phoneCursor.getString(index)
-//                            }
-//                        }
-//
+                    }
+
 
 
                     }
@@ -401,10 +400,11 @@
 
         }
 
+
         private fun loadThumbnailImage(width: Int, height: Int) {
             // 使用 Glide 或其他图像加载库加载缩略图，传递图像视图的宽度和高度
             Glide.with(this)
-                .load(photoFile.path)
+                .load(crimeDetailViewModel.getPhotoFile(crime).path)
                 .override(width, height) // 设置缩略图的尺寸
                 .centerCrop() // 可根据需要使用其他缩放策略
                 .into(photoView)
@@ -417,7 +417,7 @@
                 getString(R.string.crime_report_unsolved)
             }
             val dateString = DateFormat.getDateInstance().format(crime.date)
-            var suspect = if (crime.suspect.isBlank()) {
+            val suspect = if (crime.suspect.isBlank()) {
                 getString(R.string.crime_report_no_suspect)
             } else {
                 getString(R.string.crime_report_suspect, crime.suspect)
