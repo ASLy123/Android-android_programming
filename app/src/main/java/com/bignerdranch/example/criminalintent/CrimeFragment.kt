@@ -24,14 +24,13 @@
     import java.io.File
     import java.text.DateFormat
     import android.text.*
-    import android.util.Log
     import android.view.ViewTreeObserver
     import android.view.ViewTreeObserver.*
     import androidx.core.app.ActivityCompat
     import com.bumptech.glide.Glide
     import java.util.*
 
-    private const val TAG = "CrimeFragment"
+//    private const val TAG = "CrimeFragment"
     private const val ARG_CRIME_ID = "crime_id"
     private const val DIALOG_DATE = "DialogDate"
     private const val DIALOG_TIME = "DialogTime"
@@ -65,7 +64,6 @@
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-            Log.d(TAG, "**********************onCreate")
             crime = Crime()
             val crimeId: UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
             //        Log.d(TAG, "args bundle crime ID: $crimeId")
@@ -103,7 +101,6 @@
             container: ViewGroup?,
             savedInstanceState: Bundle?
         ): View? {
-            Log.d(TAG, "**********************onCreateView")
             val view = inflater.inflate(R.layout.fragment_crime, container, false)  //生成fragment的视图
             //视图的父视图, 是否立即将生成的视图添加给父视图
             titleField = view.findViewById(R.id.crime_title) as EditText
@@ -127,7 +124,6 @@
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             super.onViewCreated(view, savedInstanceState)
-            Log.d(TAG, "**********************onViewCreated")
             crimeDetailViewModel.crimeLiveData.observe(
                 viewLifecycleOwner,
                 androidx.lifecycle.Observer { crime ->
@@ -143,7 +139,8 @@
                         updateUI()
                     }
                 })
-             fun loadThumbnailImage(width: Int, height: Int) {
+
+            fun loadThumbnailImage(width: Int, height: Int) {
                 // 使用 Glide 或其他图像加载库加载缩略图，传递图像视图的宽度和高度
                 Glide.with(this)
                     .load(crimeDetailViewModel.getPhotoFile(crime).path)
@@ -152,13 +149,25 @@
                     .into(photoView)
             }
 
+            // 添加视图树监听器以确保视图准备好后加载缩略图
+            photoView.viewTreeObserver.addOnGlobalLayoutListener(
+                object : OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        // 在视图树准备好后，加载缩略图
+                        loadThumbnailImage(photoView.width, photoView.height)
 
+                        // 移除监听器，以确保只加载一次缩略图
+                        photoView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    }
+                }
+            )
         }
+
+
 
 
         override fun onStart() {
             super.onStart()
-            Log.d(TAG, "**********************onStart")
             val titleWatcher = object : TextWatcher {
                 override fun beforeTextChanged(
                     sequence: CharSequence?,
@@ -225,7 +234,7 @@
             suspectButton.apply {
                 val pickContactIntent =
                     Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI)
-                //要执行的操作, 待访问数据的位置
+                                //要执行的操作, 待访问数据的位置
                 setOnClickListener {
                     startActivityForResult(pickContactIntent, REQUEST_CONTACT)
                 }
@@ -290,18 +299,7 @@
             }
 
 
-            // 添加视图树监听器以确保视图准备好后加载缩略图
-            photoView.viewTreeObserver.addOnGlobalLayoutListener(
-                object : OnGlobalLayoutListener {
-                    override fun onGlobalLayout() {
-                        // 在视图树准备好后，加载缩略图
-                        loadThumbnailImage(photoView.width, photoView.height)
 
-                        // 移除监听器，以确保只加载一次缩略图
-                        photoView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    }
-                }
-            )
 
 
         }
@@ -361,46 +359,43 @@
                 resultCode != Activity.RESULT_OK -> return
                 requestCode == REQUEST_CONTACT && data != null -> {
 
-                    val contactUri: Uri? = data.data    //从返回的数据中获取联系人的Uri（唯一标识符）
+                val contactUri: Uri? = data.data    //从返回的数据中获取联系人的Uri（唯一标识符）
 
-                    val resolver = requireActivity().contentResolver
-                    val queryFields = arrayOf(
-                        Contacts.DISPLAY_NAME,
-                        ContactsContract.Contacts._ID
-                    )
-                    // 定义一个字符串数组，包含您想要查询的联系人字段，这里只查询显示名字
+                val resolver = requireActivity().contentResolver
+                val queryFields = arrayOf(Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts._ID)
+                // 定义一个字符串数组，包含您想要查询的联系人字段，这里只查询显示名字
 
-                    val cursor = contactUri?.let {
-                        resolver.query(it, queryFields, null, null, null)
+                val cursor = contactUri?.let {
+                    resolver.query(it, queryFields, null, null, null)
+                }
+                //查询联系人数据库，获取指定Uri的联系人信息
+                cursor?.use {
+                    // Verify cursor contains at least one result
+                   if (it.count == 0) {
+                        return
                     }
-                    //查询联系人数据库，获取指定Uri的联系人信息
-                    cursor?.use {
-                        // Verify cursor contains at least one result
-                        if (it.count == 0) {
-                            return
+                    // Pull out the first column of the first row of data - that is your suspect's name
+                    it.moveToFirst()    //将游标移到查询结果的第一行。
+                    val suspect = it.getString(0)
+                    val contactID = it.getString(1)
+                     crime.suspect = suspect
+                     crimeDetailViewModel.saveCrime(crime)
+                     suspectButton.text = suspect
+                     val phone = activity?.contentResolver?.query(
+                          ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                         null,
+                         ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactID,
+                         null,
+                         null)
+                     phone?.apply {
+                        moveToNext()
+                        val columnIndex = getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                        if (columnIndex >= 0){
+                             crimeDetailViewModel.phoneNumber = getString(columnIndex)
                         }
-                        // Pull out the first column of the first row of data - that is your suspect's name
-                        it.moveToFirst()    //将游标移到查询结果的第一行。
-                        val suspect = it.getString(0)
-                        val contactID = it.getString(1)
-                        crime.suspect = suspect
-                        crimeDetailViewModel.saveCrime(crime)
-                        suspectButton.text = suspect
-                        val phone = activity?.contentResolver?.query(
-                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                            null,
-                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactID,
-                            null,
-                            null
-                        )
-                        phone?.apply {
-                            moveToNext()
-                            val columnIndex =
-                                getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                            if (columnIndex >= 0) {
-                                crimeDetailViewModel.phoneNumber = getString(columnIndex)
-                            }
-                        }
+                    }
+
 
 
                     }
@@ -415,14 +410,7 @@
         }
 
 
-        private fun loadThumbnailImage(width: Int, height: Int) {
-            // 使用 Glide 或其他图像加载库加载缩略图，传递图像视图的宽度和高度
-            Glide.with(this)
-                .load(crimeDetailViewModel.getPhotoFile(crime).path)
-                .override(width, height) // 设置缩略图的尺寸
-                .centerCrop() // 可根据需要使用其他缩放策略
-                .into(photoView)
-        }
+
 
         private fun getCrimeReport(): String {
             val solvedString = if (crime.isSolved) {
@@ -446,5 +434,8 @@
                 suspect
             )
         }
-}
+
+
+
+    }
 
