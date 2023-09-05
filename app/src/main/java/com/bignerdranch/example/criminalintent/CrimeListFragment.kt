@@ -21,7 +21,8 @@ class CrimeListFragment : Fragment(){
     }
 
     private var callbacks: Callbacks? = null        //用来保存实现Callbacks接口的对象
-
+    private lateinit var emptyTextView: TextView
+    private lateinit var addCrimeTextView: TextView
     private lateinit var crimeRecyclerView: RecyclerView
 //    private var adapter: CrimeAdapter? = null
     private var adapter: CrimeAdapter? = CrimeAdapter(emptyList())
@@ -51,6 +52,8 @@ class CrimeListFragment : Fragment(){
     ): View? {
         val view = inflater.inflate(R.layout.fragment_crime_list, container, false)
         crimeRecyclerView = view.findViewById(R.id.crime_recycler_view) as RecyclerView
+        emptyTextView = view.findViewById(R.id.emptyTextView) as TextView
+        addCrimeTextView = view.findViewById(R.id.addTextView) as TextView
         crimeRecyclerView.layoutManager = LinearLayoutManager(context) //LayoutManager不仅要安排列表项出现的位置，还负责定义如何滚屏
 //        updateUI()
         crimeRecyclerView.adapter = adapter
@@ -69,6 +72,28 @@ class CrimeListFragment : Fragment(){
             })
     }
 
+    override fun onStart() {
+        super.onStart()
+        crimeListViewModel.isEmptyDatabase.observe(this, Observer { isNotEmpty ->
+            // 在这里处理Boolean值（isEmpty）
+            if (isNotEmpty) {
+                crimeRecyclerView.setVisibility(View.VISIBLE)
+                emptyTextView.setVisibility(View.GONE)
+                addCrimeTextView.setVisibility(View.GONE)
+            }else{
+
+                crimeRecyclerView.setVisibility(View.GONE)
+                emptyTextView.setVisibility(View.VISIBLE)
+                addCrimeTextView.setVisibility(View.VISIBLE)
+            }
+        })
+
+        addCrimeTextView.setOnClickListener{
+            val crime = Crime()
+            crimeListViewModel.addCrime(crime)
+            callbacks?.onCrimeSelected(crime.id)
+        }
+    }
     override fun onDetach() {
         super.onDetach()
         callbacks = null    //取消callbacks属性
@@ -79,12 +104,17 @@ class CrimeListFragment : Fragment(){
         inflater.inflate(R.menu.fragment_crime_list, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean
+    {
         return when (item.itemId){
             R.id.new_crime ->{
                 val crime = Crime()
                 crimeListViewModel.addCrime(crime)
                 callbacks?.onCrimeSelected(crime.id)
+                true
+            }
+            R.id.delete_all_crime-> {
+                crimeListViewModel.deleteAll()
                 true
             }
             else -> return super.onOptionsItemSelected(item)

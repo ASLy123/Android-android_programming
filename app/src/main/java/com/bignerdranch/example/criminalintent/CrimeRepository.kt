@@ -38,6 +38,16 @@ class CrimeRepository private constructor(context: Context) {
         }
     }
 
+    fun isNotEmpty(): LiveData<Boolean> {
+        return crimeDao.isNotEmpty()
+    }
+
+    fun deleteAll(){
+        executor.execute{
+            crimeDao.deleteAll()
+        }
+    }
+
     fun getPhotoFile(crime: Crime):File = File(filesDir, crime.photoFileName)   //返回指向某个具体位置的File对象
 
     companion object {

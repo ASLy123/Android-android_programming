@@ -8,7 +8,7 @@
     <string name="new_crime">新增crime记录</string>
     <string name="crime_suspect_text">嫌疑人联系方式</string>
     <string name="crime_report_text">抗议或投诉</string>
-    <string name="crime_report">%1$s!crime发生于 %2$s. %3$s, y %4$s</string>
+    <string name="crime_report">%1$s!crime发生于 %2$s %3$s,  y %4$s</string>
     <string name="crime_report_solved">问题已解决</string>
     <string name="crime_report_unsolved">问题未解决</string>
     <string name="crime_report_no_suspect">没找到嫌疑人</string>
@@ -19,4 +19,6 @@
     <string name="crime_photo_button_description">陋习现场拍照按钮</string>
     <string name="crime_photo_no_image_description">陋习现场照片（未拍照）</string>
     <string name="crime_photo_image_description">陋习现场照片（已拍照）</string>
+    <string name="crime_empty">无可用数据</string>
+    <string name="crime_call_phone">打电话</string>
 </resources>

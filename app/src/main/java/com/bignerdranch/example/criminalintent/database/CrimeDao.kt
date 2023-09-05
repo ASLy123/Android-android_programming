@@ -15,6 +15,12 @@ interface CrimeDao {
 //    fun getCrime(id: UUID): Crime?
     fun getCrime(id: UUID): LiveData<Crime?>
 
+    @Transaction
+    @Query("SELECT COUNT(*) FROM crime")
+    fun isNotEmpty(): LiveData<Boolean>
+
+    @Query("DELETE FROM crime")
+    fun deleteAll()
 
 
     @Update

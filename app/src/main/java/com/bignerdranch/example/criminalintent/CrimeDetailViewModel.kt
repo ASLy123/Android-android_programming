@@ -9,7 +9,6 @@ class CrimeDetailViewModel : ViewModel() {
     private val crimeRepository = CrimeRepository.get()
     private val crimeIdLiveData = MutableLiveData<UUID>()       //保存着CrimeFragment当前显示（或将要显示）的crime对象的ID
 
-
     var crimeLiveData: LiveData<Crime?> = Transformations.switchMap(crimeIdLiveData) { crimeId ->
         crimeRepository.getCrime(crimeId)       //crime ID一变就触发新的数据库查询
     }
@@ -22,4 +21,5 @@ class CrimeDetailViewModel : ViewModel() {
     fun getPhotoFile(crime: Crime): File{
         return crimeRepository.getPhotoFile(crime)  //展示文件信息
     }
+
 }

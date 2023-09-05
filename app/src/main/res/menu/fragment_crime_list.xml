@@ -6,8 +6,8 @@
         android:icon="@drawable/ic_menu_add"
         android:title="@string/new_crime" />
     <item
-        android:id="@+id/delete_crime"
-        android:icon="@drawable/ic_menu_delete"
-        android:title="delete crime" />
+        android:id="@+id/delete_all_crime"
+        android:title="Delete All Crime"></item>
+
 
 </menu>

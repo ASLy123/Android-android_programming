@@ -23,4 +23,10 @@
     <string name="crime_photo_no_image_description">Crime scene photo (not set)</string>
     <string name="crime_photo_image_description">Crime scene photo(set)</string>
 
+    <string name="crime_empty">No data available</string>
+    <string name="crime_call_phone">call phone</string>
+
+
+
+
 </resources>

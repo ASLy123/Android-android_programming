@@ -1,9 +1,13 @@
 package com.bignerdranch.example.criminalintent
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 
+
+
+
 class CrimeListViewModel : ViewModel() {
-//    val crimes = mutableListOf<Crime>()
+    //    val crimes = mutableListOf<Crime>()
 //    init {
 //        for (i in 0 until 100) {
 //            val crime = Crime()
@@ -13,11 +17,16 @@ class CrimeListViewModel : ViewModel() {
 //        }
 //    }
     private val crimeRepository = CrimeRepository.get()
-//    val crimes = crimeRepository.getCrimes()
+
+    //    val crimes = crimeRepository.getCrimes()
     val crimeListLiveData = crimeRepository.getCrimes()
-    fun addCrime(crime: Crime){
+    fun addCrime(crime: Crime) {
         crimeRepository.addCrime(crime)
     }
 
+    val isEmptyDatabase: LiveData<Boolean> = crimeRepository.isNotEmpty()
 
+    fun deleteAll(){
+        crimeRepository.deleteAll()
+    }
 }
