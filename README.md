@@ -4,7 +4,8 @@
 <img width="255" alt="4" src="https://github.com/ASLy123/Android-android_programming/assets/96857443/fd899113-c6ed-4635-8203-a738051ca1eb">
 <img width="247" alt="5" src="https://github.com/ASLy123/Android-android_programming/assets/96857443/01727c49-0c4d-48c4-a331-243ae40f23ee">
 <img width="245" alt="6" src="https://github.com/ASLy123/Android-android_programming/assets/96857443/e9111ab9-24ee-4f57-8cf0-ab5adbe675a7">
-<img width="249" alt="7" src="https://github.com/ASLy123/Android-android_programming/assets/96857443/795b05ae-94a5-4efd-8264-c3aa634e8f5f">
+<img width="249" alt="7" src="https://github.com/ASLy123/Android-android_programming/assets/96857443/795b05ae-94a5-4efd-8264-c3aa634e8f5f"><img width="236" alt="4" src="https://github.com/ASLy123/Android-android_programming_CriminalIntent/assets/96857443/8a6afd4f-7786-4f09-aa8e-41e33f11d0c6">
+
 
 
 
